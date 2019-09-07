@@ -1,0 +1,9 @@
+.idea/
+*.pyc
+*.pyo
+*_initial.py
+**/migrations/**/*.py
+.coverage
+htmlcov/
+**/media/*
+**/doc/*
