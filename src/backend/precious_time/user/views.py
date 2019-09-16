@@ -3,12 +3,11 @@ from django.shortcuts import render
 import json
 from django.views.decorators.csrf import csrf_exempt
 from django.http.response import HttpResponse
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 from user.models import User
 NOT_ALLOWED_GET = 'This method does not allowed get'
 
 
-@csrf_exempt
 def register_email(user_id, pw):
     user_query_1 = User.objects.filter(id=user_id)
     user_query_2 = User.objects.filter(email=user_id)
@@ -69,27 +68,65 @@ def register(request):
         return HttpResponse(NOT_ALLOWED_GET)
 
 
+def login_email(user_id, pw):
+    code = 1
+    user_query = User.objects.filter(email=user_id)
+    if len(user_query) == 0:
+        code = 2
+    else:
+        real_pw = user_query[0].pw
+        if not check_password(pw, real_pw):
+            code = 3
+    return code
+
+
+def login_phone(user_id, pw):
+    code = 1
+    user_query = User.objects.filter(phone=user_id)
+    if len(user_query) == 0:
+        code = 2
+    else:
+        real_pw = user_query[0].pw
+        if not check_password(pw, real_pw):
+            code = 3
+    return code
+
+
+def login_name(user_id, pw):
+    code = 1
+    user_query = User.objects.filter(name=user_id)
+    if len(user_query) == 0:
+        code = 2
+    else:
+        real_pw = user_query[0].pw
+        if not check_password(pw, real_pw):
+            code = 3
+    return code
+
+
+def sync_data():
+    print("to be done")
+
+
 @csrf_exempt
 def login(request):
-    """用户从web端登录"""
     if request.method == 'POST':
+        code = 1
         in_data = json.loads(request.body, strict=False)
-        name = in_data["id"]
-        pw = in_data['pw']
-        login_success = False
-        my_data = User.objects.filter(name=name).values()[0]
-        realpw = my_data['pw']
-        if pw == realpw:
-            print('i love u')
+        value_type = in_data["code"]
+        user_id = in_data["id"]
+        pw = in_data["pw"]
+        if value_type == '1':
+            code = login_email(user_id, pw)
+        elif value_type == '2':
+            code = login_phone(user_id, pw)
         else:
-            print("fuck")
-        print("**")
-        print(my_data)
-        print(len(my_data))
-        if len(my_data) != 0:
-            login_success = True
-        out_data = {"code": login_success}
-        out_data = json.dumps(out_data)
-        return HttpResponse(out_data)
+            code = login_name(user_id, pw)
+        if code == 1:
+            sync_data()
+        out_data = {"code": code}
+        return HttpResponse(json.dumps(out_data))
     else:
         return HttpResponse(NOT_ALLOWED_GET)
+
+
