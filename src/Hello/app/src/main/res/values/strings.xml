@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Hello</string>
+    <string-array name="signway">
+        <item>手机号</item>
+        <item>邮箱</item>
+        <item>用户名</item>
+    </string-array>
 </resources>
